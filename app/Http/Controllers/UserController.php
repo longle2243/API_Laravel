@@ -1,39 +1,56 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function loginUser(Request $request)
     {
-        return User::all();
+        //
+        $input = $request->all();
+
+        Auth::attempt($input);
+
+        $user = Auth::user();
+
+        $token = $user->createToken('Token Name')->accessToken;
+        return Response(['status' => 200, 'token' => $token], 200);
     }
 
-    public function show($id)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function getUserDetail(Request $request)
     {
-        return User::find($id);
+        //
+        if(Auth::guard('api')->check()){
+            $user = Auth::guard('api')->user();
+            return response()->json([
+                "status" => "201",
+                "message" => "Success",
+                "data" => $user
+            ]);
+        }
+
+        return response()->json([
+            "status" => "401",
+            "message" => "Unauthorized",
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Display the specified resource.
+     */
+    public function userLogout()
     {
-        return User::create($request->all());
+        //
     }
 
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-        $user->update($request->all());
-
-        return $user;
-    }
-
-    public function destroy($id)
-    {
-        User::findOrFail($id)->delete();
-
-        return 204;
-    }
 }
-
